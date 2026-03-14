@@ -136,9 +136,6 @@ function render(state) {
     'Next break: ' + (state.break.label || 'Break Time');
 }
 
-let notifEnabled = true;
-let notifSound = 'notification.wav';
-
 let ws = null;
 
 function connect() {
@@ -148,8 +145,6 @@ function connect() {
   ws.onmessage = (e) => {
     const msg = JSON.parse(e.data);
     if (msg.type === 'state' || msg.type === 'finished') {
-      notifEnabled = msg.notifEnabled ?? true;
-      notifSound   = msg.notifSound   ?? 'notification.mp3';
       render(msg);
     }
   };

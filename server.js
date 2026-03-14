@@ -13,8 +13,6 @@ const state = {
   focusCount: 0,
   focusTotal: 5,
   forestCode: '',
-  notifEnabled: true,
-  notifSound: 'notification.wav',
 };
 
 let timerInterval = null;
@@ -29,8 +27,6 @@ function getSnapshot() {
     focusCount: state.focusCount,
     focusTotal: state.focusTotal,
     forestCode: state.forestCode,
-    notifEnabled: state.notifEnabled,
-    notifSound: state.notifSound,
   };
 }
 
@@ -196,24 +192,7 @@ function handleChatCommand(raw) {
       return commands.setLabel('break', label || 'Break Time');
     }
 
-    case 'notify': {
-      const val = args[0]?.toLowerCase();
-      if (val === 'on') state.notifEnabled = true;
-      else if (val === 'off') state.notifEnabled = false;
-      else state.notifEnabled = !state.notifEnabled;
-      broadcast('state');
-      return { ok: `Notification sound ${state.notifEnabled ? 'enabled' : 'disabled'}.` };
-    }
-
-    case 'notifysound': {
-      const file = args[0];
-      if (!file) return { error: 'Usage: !notifysound <filename.mp3>' };
-      state.notifSound = file;
-      broadcast('state');
-      return { ok: `Notification sound set to ${file}.` };
-    }
-
-    case 'forestcode': {
+case 'forestcode': {
       state.forestCode = args[0] ? args[0].toUpperCase().slice(0, 12) : '';
       broadcast('state');
       return { ok: state.forestCode ? `Forest code set to ${state.forestCode}.` : 'Forest code cleared.' };

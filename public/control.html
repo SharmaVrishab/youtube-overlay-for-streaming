@@ -418,29 +418,6 @@ aside::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radi
       </div>
     </div>
 
-    <!-- Notification sound -->
-    <div>
-      <div class="section-title">Notification Sound</div>
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-        <span style="font-size:12px; color:var(--muted)">Play on session end</span>
-        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-          <span id="notifLabel" style="font-size:11px; color:var(--muted)">ON</span>
-          <div id="notifToggle" onclick="toggleNotif()"
-               style="width:36px; height:20px; border-radius:10px; background:#a855f7;
-                      position:relative; cursor:pointer; transition:background 0.2s;">
-            <div id="notifThumb"
-                 style="width:16px; height:16px; border-radius:50%; background:#fff;
-                        position:absolute; top:2px; left:18px; transition:left 0.2s;"></div>
-          </div>
-        </label>
-      </div>
-      <div class="label-editor">
-        <input id="notifSoundIn" type="text" placeholder="e.g. notification.mp3" maxlength="60">
-        <button class="btn" onclick="setNotifSound()" style="font-size:11px;padding:8px 12px">Set</button>
-      </div>
-      <div style="font-size:10px; color:var(--muted); margin-top:4px;">Place files in <code style="color:#818cf8">public/assets/</code></div>
-    </div>
-
     <!-- Focus count -->
     <div>
       <div class="section-title">Focus Count</div>
@@ -602,29 +579,6 @@ function fmt(s) {
   return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
 }
 
-function toggleNotif() {
-  sendCmd('notify');
-}
-
-function setNotifSound() {
-  const v = document.getElementById('notifSoundIn').value.trim();
-  if (v) sendCmd('notifysound ' + v);
-}
-
-document.getElementById('notifSoundIn').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') setNotifSound();
-});
-
-function updateNotifUI(enabled, sound) {
-  const toggle = document.getElementById('notifToggle');
-  const thumb  = document.getElementById('notifThumb');
-  const label  = document.getElementById('notifLabel');
-  toggle.style.background = enabled ? '#a855f7' : 'rgba(255,255,255,0.1)';
-  thumb.style.left  = enabled ? '18px' : '2px';
-  label.textContent = enabled ? 'ON' : 'OFF';
-  const input = document.getElementById('notifSoundIn');
-  if (document.activeElement !== input) input.value = sound || '';
-}
 
 function getFocusCount() {
   return parseInt(document.getElementById('focusCountIn').value) || 0;
@@ -642,7 +596,6 @@ function updateSidebar(state) {
   if (document.activeElement !== document.getElementById('focusCountIn')) {
     document.getElementById('focusCountIn').value = state.focusCount ?? 0;
   }
-  updateNotifUI(state.notifEnabled ?? true, state.notifSound ?? 'notification.mp3');
   const mode = state.mode;
   const t    = state[mode];
 
