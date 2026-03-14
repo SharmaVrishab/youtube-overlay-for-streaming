@@ -135,6 +135,15 @@ function render(state) {
     'Next break: ' + (state.break.label || 'Break Time');
 }
 
+let notifEnabled = true;
+let notifSound = 'notification.mp3';
+
+function playNotification() {
+  if (!notifEnabled) return;
+  const audio = new Audio(`/assets/${notifSound}`);
+  audio.play().catch(e => console.warn('Audio error:', e));
+}
+
 let ws = null;
 
 function connect() {
@@ -144,7 +153,12 @@ function connect() {
   ws.onmessage = (e) => {
     const msg = JSON.parse(e.data);
     if (msg.type === 'state' || msg.type === 'finished') {
+      notifEnabled = msg.notifEnabled ?? true;
+      notifSound   = msg.notifSound   ?? 'notification.mp3';
       render(msg);
+    }
+    if (msg.type === 'finished') {
+      playNotification();
     }
   };
 
