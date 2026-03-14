@@ -1,0 +1,12 @@
+{
+  "name": "youtube-timer-overlay",
+  "version": "1.0.0",
+  "description": "Chat-controlled study/break timer overlay for YouTube streams",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.17.0"
+  }
+}

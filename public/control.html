@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timer Control Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=JetBrains+Mono:wght@400;600&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:      #0d0d12;
+  --bg2:     #13131e;
+  --bg3:     #1a1a2e;
+  --border:  rgba(255,255,255,0.07);
+  --text:    #e2e2f0;
+  --muted:   #6b6b8a;
+  --study1:  #a855f7;
+  --study2:  #6366f1;
+  --break1:  #10b981;
+  --break2:  #06b6d4;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Poppins', sans-serif;
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+/* ── Header ── */
+header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg2);
+}
+
+.brand {
+  display: flex; align-items: center; gap: 10px;
+}
+.brand-icon {
+  width: 32px; height: 32px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--study1), var(--study2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.brand-name { font-size: 14px; font-weight: 700; letter-spacing: 0.05em; }
+.brand-sub  { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+
+.conn-badge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+  background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3);
+  color: #f87171;
+  transition: all 0.3s;
+}
+.conn-badge.connected {
+  background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.3); color: #34d399;
+}
+.conn-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #f87171;
+  transition: background 0.3s;
+}
+.conn-badge.connected .conn-dot { background: #34d399; animation: pulse-dot 2s infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* ── Main grid ── */
+main {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 0;
+  height: calc(100vh - 57px);
+  overflow: hidden;
+}
+
+/* ── LEFT SIDEBAR ── */
+aside {
+  border-right: 1px solid var(--border);
+  background: var(--bg2);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 16px;
+  gap: 14px;
+}
+
+.section-title {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 4px;
+}
+
+/* ── Timer card ── */
+.timer-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.timer-header {
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+.timer-mode-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 3px 10px; border-radius: 20px;
+}
+
+.study-label  { background: rgba(168,85,247,0.2); color: #c084fc; }
+.break-label  { background: rgba(16,185,129,0.2); color: #34d399; }
+
+.timer-time-big {
+  font-family: 'Orbitron', monospace;
+  font-size: 42px; font-weight: 700;
+  text-align: center; letter-spacing: -1px;
+  color: #fff;
+}
+
+.timer-progress-bar {
+  height: 4px; border-radius: 2px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+.timer-progress-fill {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--study1), var(--study2));
+  transition: width 1s linear, background 0.5s;
+  width: 100%;
+}
+.break-mode .timer-progress-fill {
+  background: linear-gradient(90deg, var(--break1), var(--break2));
+}
+
+.timer-label {
+  text-align: center; font-size: 13px; font-weight: 500;
+  color: rgba(255,255,255,0.6);
+}
+
+/* ── Control buttons ── */
+.btn-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.btn-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.btn {
+  padding: 9px 8px; border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: var(--text); font-size: 12px;
+  font-family: 'Poppins', sans-serif; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.btn:hover  { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.15); }
+.btn:active { transform: scale(0.97); }
+
+.btn-start  { background: rgba(168,85,247,0.25); border-color: rgba(168,85,247,0.4); color: #c084fc; }
+.btn-start:hover { background: rgba(168,85,247,0.4); }
+.btn-pause  { background: rgba(251,191,36,0.15); border-color: rgba(251,191,36,0.3); color: #fbbf24; }
+.btn-pause:hover { background: rgba(251,191,36,0.3); }
+.btn-reset  { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.25); color: #f87171; }
+.btn-reset:hover { background: rgba(239,68,68,0.25); }
+.btn-switch { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.35); color: #818cf8; }
+.btn-switch:hover { background: rgba(99,102,241,0.35); }
+.btn-study  { background: rgba(168,85,247,0.15); border-color: rgba(168,85,247,0.3); color: #c084fc; }
+.btn-break  { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.3); color: #34d399; }
+
+/* ── Presets ── */
+.preset-row {
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+.preset-btn {
+  padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;
+  border: 1px solid var(--border); background: rgba(255,255,255,0.03);
+  color: var(--muted); cursor: pointer; transition: all 0.15s;
+  font-family: 'JetBrains Mono', monospace;
+}
+.preset-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+
+/* ── Label editor ── */
+.label-editor {
+  display: flex; gap: 6px;
+}
+.label-editor input {
+  flex: 1; padding: 8px 12px; border-radius: 9px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  color: var(--text); font-family: 'Poppins', sans-serif; font-size: 12px;
+  outline: none;
+}
+.label-editor input:focus { border-color: rgba(168,85,247,0.5); }
+.label-editor button { white-space: nowrap; font-size: 11px; padding: 8px 12px; }
+
+/* ── RIGHT: Chat panel ── */
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.chat-title { font-size: 13px; font-weight: 700; }
+.chat-hint  { font-size: 11px; color: var(--muted); }
+
+/* ── Message feed ── */
+.chat-feed {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scroll-behavior: smooth;
+}
+
+.chat-feed::-webkit-scrollbar { width: 4px; }
+.chat-feed::-webkit-scrollbar-track { background: transparent; }
+.chat-feed::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+.msg {
+  display: flex; gap: 10px; align-items: flex-start;
+}
+
+.msg-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.avatar-you   { background: linear-gradient(135deg, #a855f7, #6366f1); }
+.avatar-sys   { background: rgba(255,255,255,0.07); }
+.avatar-ok    { background: rgba(16,185,129,0.25); }
+.avatar-err   { background: rgba(239,68,68,0.25); }
+
+.msg-body { flex: 1; min-width: 0; }
+
+.msg-meta {
+  display: flex; align-items: baseline; gap: 8px; margin-bottom: 2px;
+}
+.msg-author { font-size: 12px; font-weight: 700; }
+.msg-time   { font-size: 10px; color: var(--muted); }
+
+.msg-text {
+  font-size: 13px; line-height: 1.5;
+  font-family: 'JetBrains Mono', monospace;
+  word-break: break-word;
+  background: rgba(255,255,255,0.04);
+  padding: 7px 11px; border-radius: 0 10px 10px 10px;
+  border: 1px solid var(--border);
+}
+
+.msg-text.cmd-text { color: #c084fc; }
+.msg-text.ok-text  { color: #34d399; background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.15); }
+.msg-text.err-text { color: #f87171; background: rgba(239,68,68,0.06); border-color: rgba(239,68,68,0.15); }
+.msg-text.sys-text { color: var(--muted); font-family: 'Poppins', sans-serif; font-size: 12px; font-style: italic; }
+.msg-text.fin-text {
+  color: #fbbf24;
+  background: rgba(251,191,36,0.08);
+  border-color: rgba(251,191,36,0.2);
+  font-family: 'Poppins', sans-serif; font-size: 12px;
+  animation: glow-flash 0.5s ease;
+}
+@keyframes glow-flash { 0%{box-shadow:0 0 20px rgba(251,191,36,0.6)} 100%{box-shadow:none} }
+
+/* ── Chat input ── */
+.chat-input-wrap {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.chat-prefix {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px; font-weight: 600;
+  color: var(--study1);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.chat-input {
+  flex: 1; padding: 10px 14px; border-radius: 12px;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+  color: var(--text); font-size: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  outline: none; transition: border 0.2s;
+}
+.chat-input:focus { border-color: rgba(168,85,247,0.6); background: rgba(255,255,255,0.08); }
+.chat-input::placeholder { color: var(--muted); }
+
+.send-btn {
+  padding: 10px 18px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--study1), var(--study2));
+  border: none; color: #fff; font-size: 13px; font-weight: 700;
+  font-family: 'Poppins', sans-serif; cursor: pointer;
+  transition: all 0.15s; flex-shrink: 0;
+}
+.send-btn:hover  { opacity: 0.85; transform: translateY(-1px); }
+.send-btn:active { transform: translateY(0) scale(0.98); }
+
+.chat-help {
+  margin-top: 8px;
+  font-size: 11px; color: var(--muted);
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.cmd-hint {
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(255,255,255,0.05); padding: 2px 7px; border-radius: 5px;
+  color: rgba(255,255,255,0.3); cursor: pointer; transition: color 0.15s;
+}
+.cmd-hint:hover { color: #c084fc; }
+
+/* Scrollbar */
+aside::-webkit-scrollbar { width: 3px; }
+aside::-webkit-scrollbar-track { background: transparent; }
+aside::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="brand">
+    <div class="brand-icon">⏱</div>
+    <div>
+      <div class="brand-name">Timer Control</div>
+      <div class="brand-sub">YouTube Overlay</div>
+    </div>
+  </div>
+  <div class="conn-badge" id="connBadge">
+    <span class="conn-dot" id="connDot"></span>
+    <span id="connLabel">Disconnected</span>
+  </div>
+</header>
+
+<!-- ── Main ── -->
+<main>
+
+  <!-- ── Sidebar ── -->
+  <aside>
+
+    <!-- Live timer view -->
+    <div>
+      <div class="section-title">Live Status</div>
+      <div class="timer-card" id="timerCard">
+        <div class="timer-header">
+          <span class="timer-mode-label study-label" id="modeLabel">Study</span>
+          <span style="font-size:11px; color:var(--muted)" id="runningLabel">Paused</span>
+        </div>
+        <div class="timer-time-big" id="bigTime">25:00</div>
+        <div class="timer-progress-bar">
+          <div class="timer-progress-fill" id="progressFill"></div>
+        </div>
+        <div class="timer-label" id="timerLabel">Study Session</div>
+      </div>
+    </div>
+
+    <!-- Playback controls -->
+    <div>
+      <div class="section-title">Playback</div>
+      <div class="btn-grid">
+        <button class="btn btn-start"  onclick="sendCmd('start')">▶ Start</button>
+        <button class="btn btn-pause"  onclick="sendCmd('pause')">⏸ Pause</button>
+        <button class="btn btn-reset"  onclick="sendCmd('reset')">↩ Reset</button>
+        <button class="btn btn-switch" onclick="sendCmd('switch')">⇄ Switch</button>
+      </div>
+    </div>
+
+    <!-- Mode select -->
+    <div>
+      <div class="section-title">Mode</div>
+      <div class="btn-grid">
+        <button class="btn btn-study" onclick="sendCmd('study')">📚 Study</button>
+        <button class="btn btn-break" onclick="sendCmd('break')">☕ Break</button>
+      </div>
+    </div>
+
+    <!-- Presets -->
+    <div>
+      <div class="section-title">Quick Presets</div>
+      <div style="margin-bottom:6px; font-size:10px; color:var(--muted)">Study</div>
+      <div class="preset-row" id="studyPresets">
+        <button class="preset-btn" onclick="sendCmd('study 25')">25m</button>
+        <button class="preset-btn" onclick="sendCmd('study 45')">45m</button>
+        <button class="preset-btn" onclick="sendCmd('study 60')">60m</button>
+        <button class="preset-btn" onclick="sendCmd('study 90')">90m</button>
+      </div>
+      <div style="margin-top:8px;margin-bottom:6px;font-size:10px;color:var(--muted)">Break</div>
+      <div class="preset-row">
+        <button class="preset-btn" onclick="sendCmd('break 5')">5m</button>
+        <button class="preset-btn" onclick="sendCmd('break 10')">10m</button>
+        <button class="preset-btn" onclick="sendCmd('break 15')">15m</button>
+        <button class="preset-btn" onclick="sendCmd('break 20')">20m</button>
+      </div>
+    </div>
+
+    <!-- Focus count -->
+    <div>
+      <div class="section-title">Focus Count</div>
+      <div style="display:flex; gap:6px; align-items:center;">
+        <button class="btn" onclick="sendCmd('setfocus ' + Math.max(0, getFocusCount() - 1))" style="font-size:16px; padding:6px 14px;">−</button>
+        <input id="focusCountIn" type="number" min="0" max="99" value="0"
+               style="flex:1; padding:8px; border-radius:9px; background:rgba(255,255,255,0.05);
+                      border:1px solid var(--border); color:var(--text); font-size:18px;
+                      font-family:'Orbitron',monospace; text-align:center; outline:none;">
+        <button class="btn" onclick="sendCmd('setfocus ' + Math.min(99, getFocusCount() + 1))" style="font-size:16px; padding:6px 14px;">+</button>
+      </div>
+      <button class="btn" onclick="setFocusCount()" style="width:100%; margin-top:6px; font-size:11px; padding:7px;">Set Count</button>
+    </div>
+
+    <!-- Labels -->
+    <div>
+      <div class="section-title">Study Label</div>
+      <div class="label-editor">
+        <input id="studyLabelIn" type="text" placeholder="e.g. Deep Work" maxlength="40">
+        <button class="btn" onclick="setStudyLabel()" style="font-size:11px;padding:8px 12px">Set</button>
+      </div>
+    </div>
+    <div>
+      <div class="section-title">Break Label</div>
+      <div class="label-editor">
+        <input id="breakLabelIn" type="text" placeholder="e.g. Coffee Break" maxlength="40">
+        <button class="btn" onclick="setBreakLabel()" style="font-size:11px;padding:8px 12px">Set</button>
+      </div>
+    </div>
+
+    <!-- Overlay link -->
+    <div>
+      <div class="section-title">OBS Browser Source</div>
+      <div style="background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:10px 12px;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#818cf8; word-break:break-all" id="overlayUrl"></div>
+        <button class="btn" onclick="copyOverlayUrl()" style="margin-top:8px;font-size:11px;padding:6px 12px;width:100%">Copy URL</button>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ── Chat Panel ── -->
+  <div class="chat-panel">
+    <div class="chat-header">
+      <div class="chat-title">Command Chat</div>
+      <div class="chat-hint">Type commands just like Twitch chat</div>
+    </div>
+
+    <div class="chat-feed" id="chatFeed"></div>
+
+    <div class="chat-input-wrap">
+      <div class="chat-input-row">
+        <span class="chat-prefix">!</span>
+        <input class="chat-input" id="chatInput" type="text"
+               placeholder="start  pause  reset  study 25  break 5  add 5 …"
+               autocomplete="off">
+        <button class="send-btn" onclick="submitCmd()">Send</button>
+      </div>
+      <div class="chat-help">
+        <span onclick="quickCmd('start')"      class="cmd-hint">!start</span>
+        <span onclick="quickCmd('pause')"      class="cmd-hint">!pause</span>
+        <span onclick="quickCmd('reset')"      class="cmd-hint">!reset</span>
+        <span onclick="quickCmd('switch')"     class="cmd-hint">!switch</span>
+        <span onclick="quickCmd('study 25')"   class="cmd-hint">!study 25</span>
+        <span onclick="quickCmd('break 5')"    class="cmd-hint">!break 5</span>
+        <span onclick="quickCmd('add 5')"           class="cmd-hint">!add 5</span>
+        <span onclick="quickCmd('forestcode ')"     class="cmd-hint">!forestcode</span>
+        <span onclick="quickCmd('pomodoros 5')"     class="cmd-hint">!pomodoros 5</span>
+        <span onclick="quickCmd('resetfocus')"      class="cmd-hint">!resetfocus</span>
+        <span onclick="quickCmd('help')"            class="cmd-hint">!help</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── WebSocket ──────────────────────────────────────────────────────────────
+let ws = null;
+const connBadge = document.getElementById('connBadge');
+const connLabel = document.getElementById('connLabel');
+
+function connect() {
+  const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${protocol}://${location.host}`);
+
+  ws.onopen = () => {
+    connBadge.classList.add('connected');
+    connLabel.textContent = 'Connected';
+    sysMsg('Connected to timer server.');
+  };
+
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'state' || msg.type === 'finished') {
+      updateSidebar(msg);
+    }
+    if (msg.type === 'finished') {
+      finishMsg(msg.mode);
+    }
+    if (msg.type === 'commandResult') {
+      if (msg.ok)    resultMsg(msg.ok, 'ok');
+      if (msg.error) resultMsg(msg.error, 'err');
+    }
+  };
+
+  ws.onclose = () => {
+    connBadge.classList.remove('connected');
+    connLabel.textContent = 'Disconnected';
+    sysMsg('Connection lost. Reconnecting…');
+    setTimeout(connect, 3000);
+  };
+
+  ws.onerror = () => ws.close();
+}
+
+connect();
+
+// ── Commands ──────────────────────────────────────────────────────────────
+function sendCmd(text) {
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    resultMsg('Not connected to server.', 'err'); return;
+  }
+  ws.send(JSON.stringify({ type: 'command', text: '!' + text }));
+  userMsg('!' + text);
+}
+
+function submitCmd() {
+  const input = document.getElementById('chatInput');
+  const val   = input.value.trim();
+  if (!val) return;
+  sendCmd(val.replace(/^!+/, ''));
+  input.value = '';
+}
+
+function quickCmd(cmd) {
+  document.getElementById('chatInput').value = cmd;
+  document.getElementById('chatInput').focus();
+}
+
+document.getElementById('chatInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') submitCmd();
+});
+
+function setStudyLabel() {
+  const v = document.getElementById('studyLabelIn').value.trim();
+  if (v) sendCmd('studylabel ' + v);
+}
+function setBreakLabel() {
+  const v = document.getElementById('breakLabelIn').value.trim();
+  if (v) sendCmd('breaklabel ' + v);
+}
+
+document.getElementById('studyLabelIn').addEventListener('keydown', (e) => { if(e.key==='Enter') setStudyLabel(); });
+document.getElementById('breakLabelIn').addEventListener('keydown', (e) => { if(e.key==='Enter') setBreakLabel(); });
+
+// ── Sidebar update ─────────────────────────────────────────────────────────
+function fmt(s) {
+  return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+}
+
+function getFocusCount() {
+  return parseInt(document.getElementById('focusCountIn').value) || 0;
+}
+
+function setFocusCount() {
+  sendCmd('setfocus ' + getFocusCount());
+}
+
+document.getElementById('focusCountIn').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') setFocusCount();
+});
+
+function updateSidebar(state) {
+  if (document.activeElement !== document.getElementById('focusCountIn')) {
+    document.getElementById('focusCountIn').value = state.focusCount ?? 0;
+  }
+  const mode = state.mode;
+  const t    = state[mode];
+
+  document.getElementById('bigTime').textContent = fmt(t.remaining);
+  document.getElementById('timerLabel').textContent = t.label;
+  document.getElementById('runningLabel').textContent = t.running ? '▶ Running' : (t.remaining===0 ? '✓ Done' : '⏸ Paused');
+
+  const pct = t.duration > 0 ? (t.remaining / t.duration * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressFill').style.background =
+    mode === 'study'
+      ? 'linear-gradient(90deg,#a855f7,#6366f1)'
+      : 'linear-gradient(90deg,#10b981,#06b6d4)';
+
+  const modeLabel = document.getElementById('modeLabel');
+  modeLabel.textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
+  modeLabel.className = 'timer-mode-label ' + (mode === 'study' ? 'study-label' : 'break-label');
+}
+
+// ── Overlay URL ────────────────────────────────────────────────────────────
+const overlayUrl = `${location.origin}/overlay.html`;
+document.getElementById('overlayUrl').textContent = overlayUrl;
+
+function copyOverlayUrl() {
+  navigator.clipboard.writeText(overlayUrl).then(() => sysMsg('Overlay URL copied!'));
+}
+
+// ── Chat messages ──────────────────────────────────────────────────────────
+const feed = document.getElementById('chatFeed');
+
+function nowStr() {
+  const d = new Date();
+  return d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+
+function addMsg({ avatar, avatarClass, author, text, textClass }) {
+  const el = document.createElement('div');
+  el.className = 'msg';
+  el.innerHTML = `
+    <div class="msg-avatar ${avatarClass}">${avatar}</div>
+    <div class="msg-body">
+      <div class="msg-meta">
+        <span class="msg-author">${author}</span>
+        <span class="msg-time">${nowStr()}</span>
+      </div>
+      <div class="msg-text ${textClass}">${text}</div>
+    </div>`;
+  feed.appendChild(el);
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function userMsg(text) {
+  addMsg({ avatar: 'Y', avatarClass: 'avatar-you', author: 'You', text: escHtml(text), textClass: 'cmd-text' });
+}
+
+function resultMsg(text, type) {
+  const isOk = type === 'ok';
+  // multi-line help support
+  const safeText = escHtml(text).replace(/\n/g, '<br>');
+  addMsg({
+    avatar: isOk ? '✓' : '✗',
+    avatarClass: isOk ? 'avatar-ok' : 'avatar-err',
+    author: isOk ? 'Timer' : 'Error',
+    text: safeText,
+    textClass: isOk ? 'ok-text' : 'err-text',
+  });
+}
+
+function sysMsg(text) {
+  addMsg({ avatar: '⚙', avatarClass: 'avatar-sys', author: 'System', text: escHtml(text), textClass: 'sys-text' });
+}
+
+function finishMsg(mode) {
+  addMsg({
+    avatar: '🎉',
+    avatarClass: 'avatar-ok',
+    author: 'Timer',
+    text: `${mode.charAt(0).toUpperCase()+mode.slice(1)} timer finished! 🔔`,
+    textClass: 'fin-text',
+  });
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Welcome message ─────────────────────────────────────────────────────────
+sysMsg('Welcome! Type !help for a list of commands.');
+</script>
+</body>
+</html>

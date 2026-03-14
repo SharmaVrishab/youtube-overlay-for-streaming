@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timer Overlay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: transparent;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 20px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.card {
+  background: rgba(251, 232, 185, 0.90);
+  border-radius: 28px;
+  padding: 28px 32px 24px;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Time */
+.time-display {
+  font-family: 'Space Mono', monospace;
+  font-size: 68px;
+  font-weight: 700;
+  color: #1a1209;
+  text-align: center;
+  letter-spacing: -2px;
+  line-height: 1;
+}
+
+/* Focus row */
+.focus-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  justify-content: center;
+}
+
+.focus-label {
+  font-size: 22px;
+  font-weight: 400;
+  color: #7a6540;
+}
+
+.focus-count {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1209;
+}
+
+/* Forest row */
+.forest-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.forest-icon {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.forest-code {
+  font-family: 'Space Mono', monospace;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1209;
+  letter-spacing: 2px;
+}
+
+/* Session label */
+.session-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #7a6540;
+  text-align: center;
+}
+
+/* Next break */
+.next-break {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1209;
+}
+</style>
+</head>
+<body>
+
+<div class="card" id="card">
+  <div class="time-display" id="timeDisplay">00:00</div>
+  <div class="session-label" id="sessionLabel">Study Session</div>
+  <div class="focus-row">
+    <span class="focus-label" id="focusLabel">Focus</span>
+    <span class="focus-count" id="focusCount">0/5</span>
+  </div>
+  <div class="forest-row">
+    <span class="forest-icon">🌳</span>
+    <span class="forest-code" id="forestCode">---------</span>
+  </div>
+  <div class="next-break" id="nextBreak">Next break: Break Time</div>
+</div>
+
+<script>
+function fmt(s) {
+  const m = Math.floor(s / 60), ss = s % 60;
+  return `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+}
+
+function render(state) {
+  const t = state[state.mode];
+  document.getElementById('timeDisplay').textContent = fmt(t.remaining);
+  document.getElementById('sessionLabel').textContent = t.label || '';
+  document.getElementById('focusLabel').textContent =
+    state.mode === 'study' ? 'Focus -' : 'Break -';
+  document.getElementById('focusCount').textContent =
+    `${state.focusCount ?? 0}/${state.focusTotal ?? 5}`;
+  document.getElementById('forestCode').textContent =
+    state.forestCode || '---------';
+  document.getElementById('nextBreak').textContent =
+    'Next break: ' + (state.break.label || 'Break Time');
+}
+
+let ws = null;
+
+function connect() {
+  const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${protocol}://${location.host}`);
+
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'state' || msg.type === 'finished') {
+      render(msg);
+    }
+  };
+
+  ws.onclose = () => setTimeout(connect, 3000);
+  ws.onerror = () => ws.close();
+}
+
+connect();
+</script>
+</body>
+</html>
