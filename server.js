@@ -14,7 +14,7 @@ const state = {
   focusTotal: 5,
   forestCode: '',
   notifEnabled: true,
-  notifSound: 'notification.mp3',
+  notifSound: 'notification.wav',
 };
 
 let timerInterval = null;
