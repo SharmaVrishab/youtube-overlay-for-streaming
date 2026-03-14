@@ -96,6 +96,24 @@ body {
   font-weight: 700;
   color: #1a1209;
 }
+
+/* Audio unlock prompt */
+#audioPrompt {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  background: rgba(0,0,0,0.75);
+  color: #fff;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.15);
+}
 </style>
 </head>
 <body>
@@ -113,6 +131,8 @@ body {
   </div>
   <div class="next-break" id="nextBreak">Next break: Break Time</div>
 </div>
+
+<div id="audioPrompt">🔔 Click to enable sound</div>
 
 <script>
 function fmt(s) {
@@ -136,10 +156,28 @@ function render(state) {
 }
 
 let notifEnabled = true;
-let notifSound = 'notification.mp3';
+let notifSound = 'notification.wav';
+let audioUnlocked = false;
+
+const audioPrompt = document.getElementById('audioPrompt');
+
+audioPrompt.addEventListener('click', () => {
+  // Play a silent buffer to unlock audio for this page
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const buf = ctx.createBuffer(1, 1, 22050);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.connect(ctx.destination);
+  src.start(0);
+  ctx.resume().then(() => {
+    audioUnlocked = true;
+    audioPrompt.textContent = '🔔 Sound enabled';
+    setTimeout(() => audioPrompt.style.display = 'none', 1500);
+  });
+});
 
 function playNotification() {
-  if (!notifEnabled) return;
+  if (!notifEnabled || !audioUnlocked) return;
   const audio = new Audio(`/assets/${notifSound}`);
   audio.play().catch(e => console.warn('Audio error:', e));
 }
