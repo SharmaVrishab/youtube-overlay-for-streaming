@@ -432,6 +432,20 @@ aside::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radi
       <button class="btn" onclick="setFocusCount()" style="width:100%; margin-top:6px; font-size:11px; padding:7px;">Set Count</button>
     </div>
 
+    <!-- Session goal -->
+    <div>
+      <div class="section-title">Session Goal</div>
+      <div style="display:flex; gap:6px; align-items:center;">
+        <button class="btn" onclick="sendCmd('pomodoros ' + Math.max(1, getFocusTotal() - 1))" style="font-size:16px; padding:6px 14px;">−</button>
+        <input id="focusTotalIn" type="number" min="1" max="99" value="0"
+               style="flex:1; padding:8px; border-radius:9px; background:rgba(255,255,255,0.05);
+                      border:1px solid var(--border); color:var(--text); font-size:18px;
+                      font-family:'Orbitron',monospace; text-align:center; outline:none;">
+        <button class="btn" onclick="sendCmd('pomodoros ' + Math.min(99, getFocusTotal() + 1))" style="font-size:16px; padding:6px 14px;">+</button>
+      </div>
+      <button class="btn" onclick="setFocusTotal()" style="width:100%; margin-top:6px; font-size:11px; padding:7px;">Set Goal</button>
+    </div>
+
     <!-- Labels -->
     <div>
       <div class="section-title">Study Label</div>
@@ -592,9 +606,24 @@ document.getElementById('focusCountIn').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') setFocusCount();
 });
 
+function getFocusTotal() {
+  return parseInt(document.getElementById('focusTotalIn').value) || 0;
+}
+
+function setFocusTotal() {
+  sendCmd('pomodoros ' + getFocusTotal());
+}
+
+document.getElementById('focusTotalIn').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') setFocusTotal();
+});
+
 function updateSidebar(state) {
   if (document.activeElement !== document.getElementById('focusCountIn')) {
     document.getElementById('focusCountIn').value = state.focusCount ?? 0;
+  }
+  if (document.activeElement !== document.getElementById('focusTotalIn')) {
+    document.getElementById('focusTotalIn').value = state.focusTotal ?? 0;
   }
   const mode = state.mode;
   const t    = state[mode];

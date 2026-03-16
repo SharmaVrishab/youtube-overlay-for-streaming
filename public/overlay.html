@@ -129,7 +129,7 @@ function render(state) {
   document.getElementById('focusLabel').textContent =
     state.mode === 'study' ? 'Focus -' : 'Break -';
   document.getElementById('focusCount').textContent =
-    `${state.focusCount ?? 0}/${state.focusTotal ?? 5}`;
+    `${state.focusCount ?? 0}/${state.focusTotal ?? 0}`;
   document.getElementById('forestCode').textContent =
     state.forestCode || '---------';
   document.getElementById('nextBreak').textContent =

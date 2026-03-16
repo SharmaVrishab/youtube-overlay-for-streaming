@@ -11,7 +11,7 @@ const state = {
   study: { label: 'Study Session', duration: 25 * 60, remaining: 25 * 60, running: false },
   break: { label: 'Break Time',   duration:  5 * 60, remaining:  5 * 60, running: false },
   focusCount: 0,
-  focusTotal: 5,
+  focusTotal: 0,
   forestCode: '',
 };
 
